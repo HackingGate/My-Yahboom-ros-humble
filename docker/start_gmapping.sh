@@ -38,7 +38,7 @@ run_launch() {
 run_launch "yahboomcar_bringup" "yahboomcar_bringup_launch.py" "/root/yahboomcar_bringup.log"
 run_launch "yahboomcar_nav" "map_gmapping_app_launch.xml" "/root/yahboomcar_nav.log"
 run_launch "usb_cam" "camera.launch.py" "/root/usb_cam.log"
-run_launch "pkg_imageprocessor_py" "imageprocessor" "/root/imageprocessor.log"
+nohup ros2 run pkg_imageprocessor_py imageprocessor > /root/imageprocessor.log 2>&1 &
 
 # Allow some time for the nodes to start properly
 sleep 1
