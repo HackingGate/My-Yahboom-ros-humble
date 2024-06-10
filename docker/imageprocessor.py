@@ -14,7 +14,7 @@ class ImageCompressor(Node):
             10)
         self.publisher_ = self.create_publisher(CompressedImage, '/compressed_video', 10)
         self.bridge = CvBridge()
-        self.compression_quality = 80 # Set the desired compression quality (0-100)
+        self.compression_quality = 50 # Set the desired compression quality (0-100)
 
     def listener_callback(self, msg):
         try:
