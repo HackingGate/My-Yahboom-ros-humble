@@ -19,6 +19,9 @@ sleep 1
 
 /root/setup_imageprocessor.sh
 
+# Source the setup script
+source ~/yahboomcar_ros2_ws/yahboomcar_ws/install/setup.bash
+
 # Function to run launch files and log output
 run_launch() {
     package=$1
