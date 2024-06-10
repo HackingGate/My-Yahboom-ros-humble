@@ -17,7 +17,7 @@ echo "IP publish script started"
 # Give time for the environment to settle
 sleep 1
 
-./setup_imageprocessor.sh
+/root/setup_imageprocessor.sh
 
 # Function to run launch files and log output
 run_launch() {

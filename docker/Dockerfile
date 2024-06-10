@@ -1,7 +1,9 @@
 FROM yahboomtechnology/ros-humble:4.1.2
 
 # Copy your script into the container
-COPY gmapping.sh /root/gmapping.sh
+COPY start_gmapping.sh /root/start_gmapping.sh
+COPY setup_imageprocessor.sh /root/setup_imageprocessor.sh
 
 # Make sure your script is executable
-RUN chmod +x /root/gmapping.sh
+RUN chmod +x /root/start_gmapping.sh
+RUN chmod +x /root/setup_imageprocessor.sh
