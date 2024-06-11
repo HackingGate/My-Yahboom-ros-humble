@@ -15,5 +15,3 @@ COPY setup_videostream.sh /root/setup_videostream.sh
 RUN chmod +x /root/start_gmapping.sh
 RUN chmod +x /root/setup_imageprocessor.sh
 RUN chmod +x /root/setup_videostream.sh
-
-CMD ["/root/start_gmapping.sh"]
