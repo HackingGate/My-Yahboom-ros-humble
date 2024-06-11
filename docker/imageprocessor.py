@@ -12,7 +12,7 @@ class ImageCompressor(Node):
             '/usb_cam/image_raw/compressed',
             self.listener_callback,
             10)
-        self.publisher_ = self.create_publisher(CompressedImage, '/compressed_video', 10)
+        self.publisher_ = self.create_publisher(CompressedImage, '/compressed_video/webp', 10)
         self.bridge = CvBridge()
         self.compression_quality = 50 # Set the desired compression quality (0-100)
 
