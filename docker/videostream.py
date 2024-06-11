@@ -24,19 +24,21 @@ class VideoStream(Node):
         return (
             ffmpeg
             .input('pipe:', format='rawvideo', pix_fmt='rgb24', s=f'{self.width}x{self.height}')
-            .output('pipe:', format='mp4', vcodec='libx265', pix_fmt='yuv420p')
+            .output('pipe:', format='mp4', vcodec='libx265', pix_fmt='yuv420p', r=30)  # Added frame rate
             .run_async(pipe_stdin=True, pipe_stdout=True, pipe_stderr=True, overwrite_output=True)
         )
 
     def listener_callback(self, msg):
         try:
             # Convert compressed image message to OpenCV image
-            cv_image = self.bridge.compressed_imgmsg_to_cv2(msg)
+            cv_image = self.bridge.compressed_imgmsg_to_cv2(msg, 'bgr8')
 
-            # Ensure the image is resized to 320x240 if necessary
+            # Resize the image to 320x240 if necessary
             if cv_image.shape[1] != self.width or cv_image.shape[0] != self.height:
-                self.get_logger().info(f"Resizing image from {cv_image.shape[1]}x{cv_image.shape[0]} to {self.width}x{self.height}")
                 cv_image = cv2.resize(cv_image, (self.width, self.height))
+
+            # Convert BGR to RGB
+            cv_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
 
             # Write frame to ffmpeg process
             self.process.stdin.write(
@@ -46,17 +48,19 @@ class VideoStream(Node):
             )
 
             # Read encoded frame from ffmpeg process
-            out_frame = self.process.stdout.read(self.width * self.height * 3)
+            out_frame = self.process.stdout.read(self.width * self.height * 3 // 2)  # For yuv420p, size is width*height*3/2
             if len(out_frame) == 0:
                 self.get_logger().error("No data read from ffmpeg process.")
+                stderr_output = self.process.stderr.read()
+                self.get_logger().error(f"ffmpeg stderr: {stderr_output.decode()}")
+                self.restart_ffmpeg_process()
                 return
-            encoded_image = np.frombuffer(out_frame, np.uint8).reshape((self.height, self.width, 3))
 
             # Create a new CompressedImage message
             compressed_image_msg = CompressedImage()
             compressed_image_msg.header = msg.header
             compressed_image_msg.format = 'mp4'
-            compressed_image_msg.data = encoded_image.tobytes()
+            compressed_image_msg.data = out_frame
 
             # Publish the compressed video frame
             self.publisher_.publish(compressed_image_msg)
