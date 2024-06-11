@@ -35,6 +35,7 @@ class VideoStream(Node):
 
             # Ensure the image is resized to 320x240 if necessary
             if cv_image.shape[1] != self.width or cv_image.shape[0] != self.height:
+                self.get_logger().info(f"Resizing image from {cv_image.shape[1]}x{cv_image.shape[0]} to {self.width}x{self.height}")
                 cv_image = cv2.resize(cv_image, (self.width, self.height))
 
             # Write frame to ffmpeg process
