@@ -14,7 +14,7 @@ class VideoStream(Node):
             '/usb_cam/image_raw/compressed',
             self.listener_callback,
             10)
-        self.publisher_ = self.create_publisher(CompressedImage, '/compressed_video/mp4', 10)
+        self.publisher_ = self.create_publisher(CompressedImage, '/compressed_video/mkv', 10)
         self.bridge = CvBridge()
         self.width = 320
         self.height = 240
@@ -24,7 +24,7 @@ class VideoStream(Node):
         return (
             ffmpeg
             .input('pipe:', format='rawvideo', pix_fmt='rgb24', s=f'{self.width}x{self.height}')
-            .output('pipe:', format='matroska', vcodec='libx265', pix_fmt='yuv420p', r=30)
+            .output('pipe:', format='matroska', vcodec='libvpx-vp9', pix_fmt='yuv420p', r=30)
             .run_async(pipe_stdin=True, pipe_stdout=True, pipe_stderr=True, overwrite_output=True)
         )
 
