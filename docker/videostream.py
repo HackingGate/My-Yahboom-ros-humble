@@ -24,7 +24,7 @@ class VideoStream(Node):
         return (
             ffmpeg
             .input('pipe:', format='rawvideo', pix_fmt='rgb24', s=f'{self.width}x{self.height}')
-            .output('pipe:', format='mp4', vcodec='libx265', pix_fmt='yuv420p', r=30)  # Added frame rate
+            .output('pipe:', format='matroska', vcodec='libx265', pix_fmt='yuv420p', r=30)
             .run_async(pipe_stdin=True, pipe_stdout=True, pipe_stderr=True, overwrite_output=True)
         )
 
@@ -59,7 +59,7 @@ class VideoStream(Node):
             # Create a new CompressedImage message
             compressed_image_msg = CompressedImage()
             compressed_image_msg.header = msg.header
-            compressed_image_msg.format = 'mp4'
+            compressed_image_msg.format = 'mkv'  # Changed format to mkv
             compressed_image_msg.data = out_frame
 
             # Publish the compressed video frame
