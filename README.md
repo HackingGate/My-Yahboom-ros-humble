@@ -4,6 +4,10 @@
 
 https://github.com/HackingGate/My-Yahboom-Controller
 
+## Demo Video
+
+https://youtu.be/pUTGvqYHX7M
+
 ## Build
 
 ```sh
