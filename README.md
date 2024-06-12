@@ -1,4 +1,8 @@
-# my-yahboom-ros-humble
+# My Yahboom ros-humble
+
+## Client-side Code
+
+https://github.com/HackingGate/My-Yahboom-Controller
 
 ## Build
 
