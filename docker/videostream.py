@@ -4,6 +4,7 @@ from sensor_msgs.msg import CompressedImage
 from cv_bridge import CvBridge
 import ffmpeg
 import numpy as np
+import cv2
 
 class VideoStream(Node):
     def __init__(self):
