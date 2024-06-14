@@ -9,5 +9,5 @@ docker run -it \
 --security-opt apparmor:unconfined \
 -v /dev/input:/dev/input \
 -v /dev/video0:/dev/video0 \
--p 1234:1234 \
+-p 5004:5004 \
 hackinggate/ros-humble:4.1.2 /bin/bash

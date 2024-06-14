@@ -22,4 +22,4 @@ RUN chmod +x /root/setup_videostream.sh
 COPY usb_cam_config_params_1.yaml /opt/ros/humble/share/usb_cam/config/params_1.yaml
 
 # Expose the RTP port
-EXPOSE 1234
+EXPOSE 5004
