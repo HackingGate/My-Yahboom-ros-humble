@@ -2,11 +2,10 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import CompressedImage
 from std_msgs.msg import String
-from cv_bridge import CvBridge
-import cv2
 import subprocess
 import os
 import threading
+import base64
 
 class VideoProcessor(Node):
     def __init__(self):
@@ -17,7 +16,6 @@ class VideoProcessor(Node):
             self.listener_callback,
             10)
         self.publisher_ = self.create_publisher(String, '/compressed_video/rtp', 10)
-        self.bridge = CvBridge()
         self.lock = threading.Lock()
 
     def listener_callback(self, msg):
@@ -25,18 +23,17 @@ class VideoProcessor(Node):
 
     def process_and_publish_video(self, msg):
         try:
-            # Convert compressed image message to OpenCV image
-            cv_image = self.bridge.compressed_imgmsg_to_cv2(msg)
-
+            # Decode base64-encoded image data
+            image_data = base64.b64decode(msg.data)
+            
             # Define the path for the temporary image file
-            temp_image_path = '/tmp/temp_image.png'
+            temp_image_path = '/tmp/temp_image.jpg'
+            
+            # Write the decoded image data to the temporary file
+            with open(temp_image_path, 'wb') as f:
+                f.write(image_data)
 
-            # Write the image to the temporary file
-            if not cv2.imwrite(temp_image_path, cv_image):
-                self.get_logger().error("Failed to write image to temporary file.")
-                return
-
-            # Check if the file exists and is not empty
+            # Check if the file is successfully written
             if not os.path.exists(temp_image_path) or os.path.getsize(temp_image_path) == 0:
                 self.get_logger().error("Temporary image file is missing or empty.")
                 return
