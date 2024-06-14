@@ -3,6 +3,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import CompressedImage
 from cv_bridge import CvBridge
 import cv2
+import threading
 
 class ImageCompressor(Node):
     def __init__(self):
@@ -14,9 +15,13 @@ class ImageCompressor(Node):
             10)
         self.publisher_ = self.create_publisher(CompressedImage, '/compressed_video/webp', 10)
         self.bridge = CvBridge()
-        self.compression_quality = 50 # Set the desired compression quality (0-100)
+        self.compression_quality = 80  # Set the desired compression quality (0-100)
+        self.lock = threading.Lock()  # To ensure thread safety
 
     def listener_callback(self, msg):
+        threading.Thread(target=self.process_and_publish_image, args=(msg,)).start()
+
+    def process_and_publish_image(self, msg):
         try:
             # Convert compressed image message to OpenCV image
             cv_image = self.bridge.compressed_imgmsg_to_cv2(msg)
@@ -25,14 +30,18 @@ class ImageCompressor(Node):
             encode_param = [int(cv2.IMWRITE_WEBP_QUALITY), self.compression_quality]
             result, encoded_image = cv2.imencode('.webp', cv_image, encode_param)
 
-            # Create a new CompressedImage message
-            compressed_image_msg = CompressedImage()
-            compressed_image_msg.header = msg.header
-            compressed_image_msg.format = 'webp'
-            compressed_image_msg.data = encoded_image.tobytes()
+            if result:
+                # Create a new CompressedImage message
+                compressed_image_msg = CompressedImage()
+                compressed_image_msg.header = msg.header
+                compressed_image_msg.format = 'webp'
+                compressed_image_msg.data = encoded_image.tobytes()
 
-            # Publish the compressed image
-            self.publisher_.publish(compressed_image_msg)
+                # Acquire lock to publish the compressed image
+                with self.lock:
+                    self.publisher_.publish(compressed_image_msg)
+            else:
+                self.get_logger().error("Failed to encode image to WebP")
         except Exception as e:
             self.get_logger().error(f"Failed to process image: {str(e)}")
 
