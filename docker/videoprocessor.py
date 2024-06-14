@@ -5,7 +5,6 @@ from std_msgs.msg import String
 import subprocess
 import os
 import threading
-import base64
 
 class VideoProcessor(Node):
     def __init__(self):
@@ -23,15 +22,12 @@ class VideoProcessor(Node):
 
     def process_and_publish_video(self, msg):
         try:
-            # Decode base64-encoded image data
-            image_data = base64.b64decode(msg.data)
-            
             # Define the path for the temporary image file
             temp_image_path = '/tmp/temp_image.jpg'
             
-            # Write the decoded image data to the temporary file
+            # Write the image data to the temporary file
             with open(temp_image_path, 'wb') as f:
-                f.write(image_data)
+                f.write(msg.data)
 
             # Check if the file is successfully written
             if not os.path.exists(temp_image_path) or os.path.getsize(temp_image_path) == 0:
