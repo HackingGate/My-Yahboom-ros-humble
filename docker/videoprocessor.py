@@ -26,6 +26,7 @@ class VideoProcessor(Node):
         return f"rtp://localhost:{port}"
 
     def start_ffmpeg_process(self, width, height):
+        self.get_logger().info(f"Starting ffmpeg process for RTP stream: {self.rtp_url}")
         return (
             ffmpeg
             .input('pipe:', format='rawvideo', pix_fmt='yuv422p', s=f'{width}x{height}')
@@ -62,6 +63,7 @@ class VideoProcessor(Node):
     def publish_rtp_url(self):
         rtp_msg = String()
         rtp_msg.data = self.rtp_url
+        self.get_logger().info(f"Publishing RTP URL: {self.rtp_url}")
         self.publisher_.publish(rtp_msg)
 
     def restart_ffmpeg_process(self, width, height):
