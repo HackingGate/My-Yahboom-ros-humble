@@ -23,7 +23,7 @@ class VideoProcessor(Node):
 
     def generate_rtp_url(self):
         port = 5004  # Default RTP port
-        return f"rtp://127.0.0.1:{port}"
+        return f"rtp://localhost:{port}"
 
     def start_ffmpeg_process(self, width, height):
         return (
@@ -55,15 +55,6 @@ class VideoProcessor(Node):
                 .astype(np.uint8)
                 .tobytes()
             )
-
-            # Read encoded frame from ffmpeg process
-            out_frame = self.process.stdout.read(width * height * 2)  # For yuv422p, size is width*height*2
-            if len(out_frame) == 0:
-                self.get_logger().error("No data read from ffmpeg process.")
-                stderr_output = self.process.stderr.read()
-                self.get_logger().error(f"ffmpeg stderr: {stderr_output.decode()}")
-                self.restart_ffmpeg_process(width, height)
-                return
         except Exception as e:
             self.get_logger().error(f"Failed to process video frame: {str(e)}")
             self.restart_ffmpeg_process(width, height)
