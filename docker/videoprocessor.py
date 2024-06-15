@@ -3,8 +3,9 @@ from rclpy.node import Node
 from sensor_msgs.msg import CompressedImage
 from std_msgs.msg import String
 from cv_bridge import CvBridge
-import ffmpeg
-import numpy as np
+import subprocess
+import os
+import threading
 import cv2
 
 class VideoProcessor(Node):
@@ -17,68 +18,48 @@ class VideoProcessor(Node):
             10)
         self.publisher_ = self.create_publisher(String, '/compressed_video/rtp', 10)
         self.bridge = CvBridge()
-        self.process = None
-        self.frame_size = None
-        self.rtp_url = self.generate_rtp_url()
-
-    def generate_rtp_url(self):
-        port = 5004  # Default RTP port
-        return f"rtp://localhost:{port}"
-
-    def start_ffmpeg_process(self, width, height):
-        self.get_logger().info(f"Starting ffmpeg process for RTP stream: {self.rtp_url}")
-        return (
-            ffmpeg
-            .input('pipe:', format='rawvideo', pix_fmt='yuv422p', s=f'{width}x{height}')
-            .output(self.rtp_url, format='rtp', vcodec='libx264', pix_fmt='yuv422p', r=30)
-            .run_async(pipe_stdin=True, pipe_stdout=True, pipe_stderr=True, overwrite_output=True)
-        )
+        self.image_save_dir = '/tmp'  # Temporary directory for saving images
+        self.output_video_path = os.path.join(self.image_save_dir, 'output_video.mp4')  # Path to save the output video
+        self.lock = threading.Lock()
 
     def listener_callback(self, msg):
+        threading.Thread(target=self.process_and_save_video, args=(msg,)).start()
+
+    def process_and_save_video(self, msg):
         try:
             # Convert compressed image message to OpenCV image
-            np_arr = np.frombuffer(msg.data, np.uint8)
-            cv_image = cv2.imdecode(np_arr, cv2.IMREAD_UNCHANGED)
+            cv_image = self.bridge.compressed_imgmsg_to_cv2(msg)
+            
+            # Define the path for the temporary image file
+            temp_image_path = os.path.join(self.image_save_dir, 'temp_image.jpg')
+            
+            # Save the image to the temporary file
+            cv2.imwrite(temp_image_path, cv_image)
 
-            # Get frame size
-            height, width, _ = cv_image.shape
-            if self.frame_size is None:
-                self.frame_size = (width, height)
-                self.process = self.start_ffmpeg_process(width, height)
-                self.publish_rtp_url()
-            elif self.frame_size != (width, height):
-                self.frame_size = (width, height)
-                self.restart_ffmpeg_process(width, height)
+            # Check if the file is successfully written
+            if not os.path.exists(temp_image_path) or os.path.getsize(temp_image_path) == 0:
+                self.get_logger().error("Temporary image file is missing or empty.")
+                return
 
-            # Write frame to ffmpeg process
-            self.process.stdin.write(
-                cv_image
-                .astype(np.uint8)
-                .tobytes()
-            )
+            # Define the ffmpeg command for encoding to VP9 and saving as MP4
+            ffmpeg_command = [
+                'ffmpeg', '-y', '-framerate', '20', '-i', temp_image_path, '-r', '20', '-c:v', 'libvpx-vp9',
+                '-strict', 'experimental', '-f', 'mp4', self.output_video_path
+            ]
+
+            # Execute the ffmpeg command
+            process = subprocess.Popen(ffmpeg_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout, stderr = process.communicate()
+
+            if process.returncode != 0:
+                self.get_logger().error(f"FFmpeg command failed: {stderr.decode('utf-8')}")
+            else:
+                self.get_logger().info(f"Saved output video to {self.output_video_path}")
+
+            # Remove the temporary image file
+            os.remove(temp_image_path)
         except Exception as e:
-            self.get_logger().error(f"Failed to process video frame: {str(e)}")
-            self.restart_ffmpeg_process(width, height)
-
-    def publish_rtp_url(self):
-        rtp_msg = String()
-        rtp_msg.data = self.rtp_url
-        self.get_logger().info(f"Publishing RTP URL: {self.rtp_url}")
-        self.publisher_.publish(rtp_msg)
-
-    def restart_ffmpeg_process(self, width, height):
-        self.get_logger().info("Restarting ffmpeg process.")
-        if self.process:
-            self.process.stdin.close()
-            self.process.wait()
-        self.process = self.start_ffmpeg_process(width, height)
-        self.publish_rtp_url()
-
-    def destroy_node(self):
-        if self.process:
-            self.process.stdin.close()
-            self.process.wait()
-        super().destroy_node()
+            self.get_logger().error(f"Failed to process video: {str(e)}")
 
 def main(args=None):
     rclpy.init(args=args)
