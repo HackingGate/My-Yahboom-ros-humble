@@ -1,0 +1,14 @@
+streaming: {
+  streams_folder = "/opt/janus/share/janus/streams"
+}
+
+rtp: {
+  id = "stream1"
+  description = "RTMP Stream"
+  audio = false
+  video = true
+  videoport = 10000
+  videopt = 96
+  videortpmap = "H264/90000"
+  videofmtp = "profile-level-id=42e01f;packetization-mode=1"
+}

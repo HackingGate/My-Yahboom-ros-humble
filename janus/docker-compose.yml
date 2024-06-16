@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  janus:
+    image: meetecho/janus-gateway
+    ports:
+      - "8088:8088"
+      - "8089:8089"
+      - "10000-10200:10000-10200/udp"
+    volumes:
+      - ./janus.conf:/opt/janus/etc/janus/janus.jcfg
+      - ./janus.plugin.streaming.jcfg:/opt/janus/etc/janus/janus.plugin.streaming.jcfg
+    command: janus -F /opt/janus/etc/janus
