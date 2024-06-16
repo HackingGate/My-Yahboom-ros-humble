@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import CompressedImage
+from std_msgs.msg import String
 from cv_bridge import CvBridge
 import ffmpeg
 import numpy as np
@@ -14,17 +15,30 @@ class VideoProcessor(Node):
             '/usb_cam/image_raw/compressed',
             self.listener_callback,
             10)
+        self.url_publisher = self.create_publisher(String, '/compressed_video/rtmp', 10)
         self.bridge = CvBridge()
         self.process = None
         self.frame_size = None
-        self.video_file = '/tmp/output_video.mp4'
+        self.streaming_url = 'rtmp://localhost:1935/live/stream'
+        self.publish_streaming_url()
 
     def start_ffmpeg_process(self, width, height):
-        self.get_logger().info(f"Starting ffmpeg process to save video to {self.video_file}")
+        self.get_logger().info(f"Starting ffmpeg process to stream video to {self.streaming_url}")
         return (
             ffmpeg
             .input('pipe:', format='rawvideo', pix_fmt='bgr24', s=f'{width}x{height}', r=20)
-            .output(self.video_file, vcodec='libx264', pix_fmt='yuv420p', r=20)
+            .output(
+                self.streaming_url,
+                vcodec='libx264',
+                pix_fmt='yuv420p',
+                r=20,
+                f='flv',
+                preset='ultrafast',
+                tune='zerolatency',
+                bufsize='64k',
+                maxrate='500k',
+                g=20  # keyframe interval
+            )
             .overwrite_output()
             .run_async(pipe_stdin=True)
         )
@@ -59,6 +73,12 @@ class VideoProcessor(Node):
             self.process.stdin.close()
             self.process.wait()
         self.process = self.start_ffmpeg_process(width, height)
+
+    def publish_streaming_url(self):
+        self.get_logger().info(f"Publishing streaming URL: {self.streaming_url}")
+        url_msg = String()
+        url_msg.data = self.streaming_url
+        self.url_publisher.publish(url_msg)
 
     def destroy_node(self):
         if self.process:
