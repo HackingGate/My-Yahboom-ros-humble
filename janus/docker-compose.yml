@@ -2,7 +2,7 @@ version: '3'
 
 services:
   janus:
-    image: meetecho/janus-gateway
+    image: hackinggate/janus-gateway
     ports:
       - "8088:8088"
       - "8089:8089"
@@ -11,3 +11,5 @@ services:
       - ./janus.conf:/opt/janus/etc/janus/janus.jcfg
       - ./janus.plugin.streaming.jcfg:/opt/janus/etc/janus/janus.plugin.streaming.jcfg
     command: janus -F /opt/janus/etc/janus
+
+# docker build -t hackinggate/janus-gateway .
