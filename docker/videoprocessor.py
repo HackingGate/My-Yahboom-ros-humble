@@ -14,10 +14,11 @@ class VideoProcessor(Node):
             '/usb_cam/image_raw/compressed',
             self.listener_callback,
             10)
+        self.url_publisher = self.create_publisher(String, '/compressed_video/rtp', 10)
         self.bridge = CvBridge()
         self.process = None
         self.frame_size = None
-        self.streaming_url = 'rtp://janus:10000'
+        self.streaming_url = 'rtp://localhost:10000'
         self.publish_streaming_url()
 
     def start_ffmpeg_process(self, width, height):
@@ -25,7 +26,7 @@ class VideoProcessor(Node):
         return (
             ffmpeg
             .input('pipe:', format='rawvideo', pix_fmt='bgr24', s=f'{width}x{height}', r=20)
-            .output(self.streaming_url, vcodec='libx264', pix_fmt='yuv420p', r=20, f='rtp', rtpflags='sendrecv', payload_type=96)
+            .output(self.streaming_url, vcodec='libx264', pix_fmt='yuv420p', r=20, f='rtp', payload_type=96)
             .overwrite_output()
             .run_async(pipe_stdin=True)
         )

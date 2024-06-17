@@ -1,10 +1,10 @@
 streaming: {
-  streams_folder = "/opt/janus/share/janus/streams"
+  streams_folder = "/usr/local/share/janus/streams"
 }
 
 rtp: {
   id = "stream1"
-  description = "RTMP Stream"
+  description = "RTP Stream"
   audio = false
   video = true
   videoport = 10000

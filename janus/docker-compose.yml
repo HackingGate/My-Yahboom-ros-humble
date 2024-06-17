@@ -1,15 +1,15 @@
-version: '3'
+version: '3.8'
 
 services:
-  janus:
-    image: hackinggate/janus-gateway
+  janus-gateway:
+    image: hackinggate/janus-gateway:latest
+    container_name: janus-gateway
     ports:
       - "8088:8088"
       - "8089:8089"
       - "10000-10200:10000-10200/udp"
     volumes:
-      - ./janus.conf:/opt/janus/etc/janus/janus.jcfg
-      - ./janus.plugin.streaming.jcfg:/opt/janus/etc/janus/janus.plugin.streaming.jcfg
-    command: janus -F /opt/janus/etc/janus
+      - ./janus.plugin.streaming.jcfg:/usr/local/etc/janus/janus.plugin.streaming.jcfg
+    restart: unless-stopped
 
 # docker build -t hackinggate/janus-gateway .
