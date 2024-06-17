@@ -1,7 +1,9 @@
 FROM yahboomtechnology/ros-humble:4.1.2
 
 # Update and install ffmpeg
-RUN apt-get update && apt-get install -y ffmpeg
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    v4l-utils
 
 # Install ffmpeg-python using pip
 RUN pip install ffmpeg-python
