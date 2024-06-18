@@ -14,11 +14,11 @@ class VideoProcessor(Node):
             '/usb_cam/image_raw/compressed',
             self.listener_callback,
             10)
-        self.url_publisher = self.create_publisher(String, '/compressed_video/rtmp', 10)
+        self.url_publisher = self.create_publisher(String, '/compressed_video/hls', 10)  # Changed topic to ll-hls
         self.bridge = CvBridge()
         self.process = None
         self.frame_size = None
-        self.streaming_url = 'rtmp://localhost:1935/live/stream'
+        self.streaming_url = 'http://localhost:8000/hls/stream.m3u8'  # LL-HLS streaming URL
         self.publish_streaming_url()
         self.encoder = 'libx264'  # Using software encoder due to hardware limitations
 
@@ -33,16 +33,13 @@ class VideoProcessor(Node):
                     vcodec=self.encoder,  # Use the chosen encoder
                     pix_fmt='yuv420p',
                     r=20,
-                    f='flv',
-                    preset='ultrafast',
-                    tune='zerolatency',
-                    bufsize='64k',
-                    maxrate='800k',
-                    g=10,  # Very low GOP size for low latency
-                    movflags='faststart',
-                    rtbufsize='64k',  # Input buffer size
-                    max_delay='0',  # Zero delay
-                    vsync='drop'  # Drop frames if they are late
+                    hls_time=1,  # Segment duration for LL-HLS
+                    hls_list_size=3,  # Number of segments to keep in playlist
+                    hls_flags='delete_segments+program_date_time',  # LL-HLS flags
+                    f='hls',
+                    hls_segment_type='fmp4',  # LL-HLS segment type
+                    hls_playlist_type='event',  # Playlist type for LL-HLS
+                    hls_allow_cache=0,  # Disable caching for low-latency
                 )
                 .overwrite_output()
                 .run_async(pipe_stdin=True)
