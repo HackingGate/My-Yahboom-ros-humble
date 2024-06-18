@@ -20,31 +20,38 @@ class VideoProcessor(Node):
         self.frame_size = None
         self.streaming_url = 'rtmp://localhost:1935/live/stream'
         self.publish_streaming_url()
+        self.encoder = 'libx264'  # Using software encoder due to hardware limitations
 
     def start_ffmpeg_process(self, width, height):
         self.get_logger().info(f"Starting ffmpeg process to stream video to {self.streaming_url}")
-        return (
-            ffmpeg
-            .input('pipe:', format='rawvideo', pix_fmt='bgr24', s=f'{width}x{height}', r=30)
-            .output(
-                self.streaming_url,
-                vcodec='h264_v4l2m2m',  # Use hardware-accelerated H.264 encoding
-                pix_fmt='yuv420p',
-                r=30,
-                f='flv',
-                preset='ultrafast',
-                tune='zerolatency',
-                bufsize='64k',
-                maxrate='800k',
-                g=10,  # Very low GOP size for low latency
-                movflags='faststart',
-                rtbufsize='64k',  # Input buffer size
-                max_delay='0',  # Zero delay
-                vsync='drop'  # Drop frames if they are late
+        try:
+            process = (
+                ffmpeg
+                .input('pipe:', format='rawvideo', pix_fmt='bgr24', s=f'{width}x{height}', r=20)
+                .output(
+                    self.streaming_url,
+                    vcodec=self.encoder,  # Use the chosen encoder
+                    pix_fmt='yuv420p',
+                    r=20,
+                    f='flv',
+                    preset='ultrafast',
+                    tune='zerolatency',
+                    bufsize='64k',
+                    maxrate='800k',
+                    g=10,  # Very low GOP size for low latency
+                    movflags='faststart',
+                    rtbufsize='64k',  # Input buffer size
+                    max_delay='0',  # Zero delay
+                    vsync='drop'  # Drop frames if they are late
+                )
+                .overwrite_output()
+                .run_async(pipe_stdin=True)
             )
-            .overwrite_output()
-            .run_async(pipe_stdin=True)
-        )
+            self.get_logger().info(f"Started FFmpeg process with encoder {self.encoder}")
+            return process
+        except ffmpeg.Error as e:
+            self.get_logger().error(f"FFmpeg error with {self.encoder}: {e}")
+            raise
 
     def listener_callback(self, msg):
         try:
