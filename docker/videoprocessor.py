@@ -19,7 +19,12 @@ class VideoProcessor(Node):
         self.process = None
         self.frame_size = None
         self.streaming_url = 'rtsp://localhost:8554/mystream'
+
+        # Publish streaming URL immediately
         self.publish_streaming_url()
+
+        # Timer to publish the streaming URL every 5 seconds
+        self.timer = self.create_timer(5.0, self.publish_streaming_url)
 
     def start_ffmpeg_process(self, width, height):
         self.get_logger().info("Starting ffmpeg process to stream video to mediamtx")
