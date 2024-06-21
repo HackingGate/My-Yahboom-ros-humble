@@ -40,7 +40,6 @@ run_launch "yahboomcar_nav" "map_gmapping_app_launch.xml" "/root/yahboomcar_nav.
 run_launch "usb_cam" "camera.launch.py" "/root/usb_cam.log"
 #nohup ros2 run pkg_imageprocessor_py imageprocessor > /root/imageprocessor.log 2>&1 &
 nohup ros2 run pkg_videoprocessor_py videoprocessor > /root/videoprocessor.log 2>&1 &
-#nohup ros2 run pkg_videostream_py videostream > /root/videostream.log 2>&1 &
 
 # Allow some time for the nodes to start properly
 sleep 1
@@ -67,13 +66,7 @@ cat /root/usb_cam.log
 #cat /root/imageprocessor.log
 
 echo "Contents of videoprocessor.log:"
-cat /root/videoprocessor.log
-
-#echo "Contents of videostream.log:"
-#cat /root/videostream.log
-
-# Keep the container running
-tail -f /dev/null
+tail -f /root/videoprocessor.log
 
 wait
 exit 0

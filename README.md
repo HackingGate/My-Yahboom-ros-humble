@@ -26,7 +26,6 @@ ln -s my-yahboom-ros-humble/ros2_humble.sh .
 
 /root/setup_imageprocessor.sh
 /root/setup_videoprocessor.sh
-/root/setup_videostream.sh
 source ~/yahboomcar_ros2_ws/yahboomcar_ws/install/setup.bash
 exit
 
