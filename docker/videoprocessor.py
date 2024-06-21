@@ -26,7 +26,22 @@ class VideoProcessor(Node):
         return (
             ffmpeg
             .input('pipe:', format='rawvideo', pix_fmt='bgr24', s=f'{width}x{height}', r=20)
-            .output(self.streaming_url, vcodec='libx264', pix_fmt='yuv420p', r=20, f='rtsp')
+            .output(
+                self.streaming_url,
+                vcodec='libvpx',
+                pix_fmt='yuv420p',
+                r=20,
+                f='rtsp',
+                tune='zerolatency',
+                preset='ultrafast',
+                max_delay='0',
+                flags='low_delay',
+                strict='experimental',
+                avioflags='direct',
+                fflags='discardcorrupt',
+                probesize=32,
+                analyzeduration=0
+            )
             .overwrite_output()
             .run_async(pipe_stdin=True)
         )
