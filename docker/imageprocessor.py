@@ -26,6 +26,9 @@ class ImageCompressor(Node):
             # Convert compressed image message to OpenCV image
             cv_image = self.bridge.compressed_imgmsg_to_cv2(msg)
 
+            # Resize image to 320x240
+            cv_image = cv2.resize(cv_image, (320, 240))
+
             # Encode OpenCV image to WebP format with specified quality
             encode_param = [int(cv2.IMWRITE_WEBP_QUALITY), self.compression_quality]
             result, encoded_image = cv2.imencode('.webp', cv_image, encode_param)
