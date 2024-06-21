@@ -32,7 +32,6 @@ class VideoProcessor(Node):
                 pix_fmt='yuv420p',
                 r=20,
                 f='rtsp',
-                tune='zerolatency',
                 preset='ultrafast',
                 max_delay='0',
                 flags='low_delay',
