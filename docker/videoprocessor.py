@@ -29,10 +29,11 @@ class VideoProcessor(Node):
             .output(
                 self.streaming_url,
                 vcodec='libvpx',
-                pix_fmt='yuv420p',
+                pix_fmt='bgr24',
                 r=20,
                 f='rtsp',
                 preset='ultrafast',
+                deadline='realtime',
                 max_delay='0',
                 flags='low_delay',
                 strict='experimental',
