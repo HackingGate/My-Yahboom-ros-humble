@@ -38,7 +38,8 @@ run_launch() {
 run_launch "yahboomcar_bringup" "yahboomcar_bringup_launch.py" "/root/yahboomcar_bringup.log"
 run_launch "yahboomcar_nav" "map_gmapping_app_launch.xml" "/root/yahboomcar_nav.log"
 run_launch "usb_cam" "camera.launch.py" "/root/usb_cam.log"
-nohup ros2 run pkg_imageprocessor_py imageprocessor > /root/imageprocessor.log 2>&1 &
+#nohup ros2 run pkg_imageprocessor_py imageprocessor > /root/imageprocessor.log 2>&1 &
+nohup ros2 run pkg_videoprocessor_py videoprocessor > /root/videoprocessor.log 2>&1 &
 #nohup ros2 run pkg_videostream_py videostream > /root/videostream.log 2>&1 &
 
 # Allow some time for the nodes to start properly
@@ -62,8 +63,11 @@ cat /root/yahboomcar_nav.log
 echo "Contents of usb_cam.log:"
 cat /root/usb_cam.log
 
-echo "Contents of imageprocessor.log:"
-cat /root/imageprocessor.log
+#echo "Contents of imageprocessor.log:"
+#cat /root/imageprocessor.log
+
+echo "Contents of videoprocessor.log:"
+cat /root/videoprocessor.log
 
 #echo "Contents of videostream.log:"
 #cat /root/videostream.log
