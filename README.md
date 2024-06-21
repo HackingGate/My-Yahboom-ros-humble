@@ -14,12 +14,6 @@ https://youtu.be/pUTGvqYHX7M
 git clone https://github.com/HackingGate/my-yahboom-ros-humble
 cd my-yahboom-ros-humble/docker
 docker build -t hackinggate/ros-humble:4.1.2 .
-
-cd ../nginx-rtmp
-docker build -t hackinggate/nginx-rtmp .
-
-cd ../nginx-ffmpeg-hls
-docker build -t hackinggate/nginx-ffmpeg-hls .
 ```
 
 ## Setup
@@ -42,12 +36,8 @@ docker commit $(docker ps -a -q | head -n 1) hackinggate/ros-humble:4.1.2
 ## Run
 
 ```sh
-cd my-yahboom-ros-humble/nginx-rtmp
-docker compose up -d
-
-cd 
-cd my-yahboom-ros-humble/nginx-ffmpeg-hls
-docker compose up -d
+cd my-yahboom-ros-humble/mediamtx
+docker compose up -d --build
 
 cd
 ./ros2_humble.sh
