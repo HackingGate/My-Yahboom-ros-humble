@@ -4,6 +4,7 @@ from sensor_msgs.msg import CompressedImage
 from cv_bridge import CvBridge
 import cv2
 import threading
+import numpy as np
 
 class ImageCompressor(Node):
     def __init__(self):
@@ -28,6 +29,19 @@ class ImageCompressor(Node):
 
             # Resize image to 320x240
             cv_image = cv2.resize(cv_image, (320, 240))
+
+            # Check average brightness
+            gray_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
+            avg_brightness = np.mean(gray_image)
+
+            # Enhance image brightness using CLAHE if it is too dark
+            if avg_brightness < 50:  # Adjust threshold as needed
+                lab = cv2.cvtColor(cv_image, cv2.COLOR_BGR2LAB)
+                l, a, b = cv2.split(lab)
+                clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+                cl = clahe.apply(l)
+                limg = cv2.merge((cl, a, b))
+                cv_image = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
 
             # Encode OpenCV image to WebP format with specified quality
             encode_param = [int(cv2.IMWRITE_WEBP_QUALITY), self.compression_quality]
