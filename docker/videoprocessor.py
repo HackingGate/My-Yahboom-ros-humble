@@ -18,7 +18,7 @@ class VideoProcessor(Node):
         self.bridge = CvBridge()
         self.process = None
         self.frame_size = None
-        self.streaming_url = 'rtsp://localhost:8554/mystream'
+        self.streaming_url = 'rtsp://localhost:8554/vp8'
 
         # Publish streaming URL immediately
         self.publish_streaming_url()
